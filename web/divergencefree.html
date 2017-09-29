@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Demo</title>
+
+    <style type="text/css">
+body {
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+}
+
+canvas {
+    dislay: block;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+body {
+    font-family: sans-serif;
+}
+
+div.error {
+    z-index: 2;
+    opacity: 0.75;
+    position: absolute;
+    background-color: red;
+    color: white;
+    top: 20%;
+    bottom: 20%;
+    left: 10%;
+    right: 10%;
+    text-align: center;
+    vetical-align: middle;
+    align-content: center;
+    font-size: 300%;
+    justify-content: center;
+    align-items: center;
+    /* display:flex; */
+}
+
+div.about, div.config, div.performance, div.logo {
+    z-index: 2;
+    opacity: 0.75;
+    position: absolute;
+    background-color: #000;
+    color: white;
+}
+
+div.about {
+    padding: 1em;
+    top: 4%;
+    bottom: 4%;
+    left: 52%;
+    right: 4%;
+}
+
+div.config {
+    padding: 1em;
+    top: 4%;
+    bottom: 4%;
+    left: 4%;
+    right: 52%;
+}
+
+div.performance {
+    padding: .5em;
+}
+
+div.logo {
+    padding: .5em;
+    background-color: rgba(0, 0, 0, 0);
+    color: white;
+    bottom: 2%;
+    right: 2%;
+}
+
+input[type=reset], button {
+    font-weight: bold;
+}
+
+input[type=text], input[type=number] {
+    width: 5em;
+}
+
+a {
+    color: inherit;
+}
+
+a:hover, a:visited, a:link, a:active {
+    text-decoration: none;
+    font-weight: bold;
+}
+
+canvas {
+    display: block;
+    /* border: 1px solid red; */
+}
+
+
+
+
+
+
+    </style>
+
+    <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-32123907-10', 'auto');
+ga('send', 'pageview');
+
+
+
+
+
+
+
+    </script>
+
+</head>
+<body>
+<div class="about">
+    <h2>About</h2>
+    <pre>
+ Copyright (c) 2017 Robert Muth (robert@muth.org)
+
+        <b>Divergence Free</b>
+
+ Source code at: <a href='https://github.com/robertmuth'>https://github.com/robertmuth</a>
+
+ More Pixel Art at: <a href='http://muth.org/Art'>http://muth.org/Art</a>
+      </pre>
+    <table>
+        <tr>
+            <th>Key</th>
+            <th>Function</th>
+        </tr>
+        <tr>
+            <th>A</th>
+            <td>Toggle About</td>
+        </tr>
+        <tr>
+            <th>C</th>
+            <td>Toggle Config</td>
+        </tr>
+        <tr>
+            <th>P</th>
+            <td>Toggle Performance</td>
+        </tr>
+        <tr>
+            <th>R</th>
+            <td>Restart</td>
+        </tr>
+    </table>
+    <br/>
+    <button type="button" data-cmd="C+">Config</button>
+    &nbsp;
+    <button type="button" data-cmd="A-">Close</button>
+</div>
+
+<div class="config" hidden>
+    <h2>Config</h2>
+    <form>
+        <select id="preset">
+        </select>
+        <button type="button" data-cmd="X">Activate Preset</button>
+    </form>
+    <h3>Customize</h3>
+
+    <form>
+        <table>
+            <tr>
+                <td><input type="text" id="backgroundColor" value="black"></td>
+                <td>Background color</td>
+            </tr>
+            <tr>
+                <td><input type="text" id="foregroundColor" value="green"></td>
+                <td>Foreground color</td>
+            </tr>
+            <tr>
+                <td><input type="number" id="particles" min='1' value='10000' max='1000000' step='1'></td>
+                <td>Particle Number<sup>*</sup></td>
+            </tr>
+            <tr>
+                <td><input type="number" id="scale" min='1' value='10' max='1000' step='1'></td>
+                <td>Turbulence size</td>
+            </tr>
+            <tr>
+                <td><input type="number" id="gain" min='1.0' value='7' max='1000' step='1.0'></td>
+                <td>Particle speed</td>
+            </tr>
+            <tr>
+                <td><input type="number" id="pointsize" min='0.1' value='2.5' max='100.0' step='0.05'></td>
+                <td>Particle size</td>
+            </tr>
+            <tr>
+                <td><input type="number" id="change" min='0.0' value='0.0' max='100.0' step='1'></td>
+                <td>Field Change Rate </td>
+            </tr>
+
+            <tr>
+                <td><input type="checkbox" id="hideAbout"></td>
+                <td>Hide About screen<sup>*</sup></td>
+            </tr>
+            <tr>
+                <td><input type="number" id="randomSeed" value=0 step=1
+                           short=1></td>
+                <td>Random Seed<sup>*</sup></td>
+            </tr>
+        </table>
+    </form>
+    <sup>* = Restart required to take effect</sup>
+
+    <p>
+        <button type="button" data-cmd="R">Restart</button>
+    </p>
+    <p>
+        <button type="button" data-cmd="C-">Close</button>
+        &nbsp;
+        <button type="button" data-cmd="A">About</button>
+        &nbsp;
+        <button type="button" data-cmd="P">Frame Rate</button>
+
+    </p>
+</div>
+
+<div class="performance" hidden>
+    <div id="fps"></div>
+</div>
+
+<div class="error" id="error" hidden></div>
+
+<div class="logo">Divergence Free</div>
+
+<canvas class="image" id="area"></canvas>
+<script type="application/dart" src="divergencefree.dart"></script>
+<script src="packages/browser/dart.js"></script>
+</body>
+</html>
