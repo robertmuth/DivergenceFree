@@ -76,7 +76,7 @@ void OptionsSetup() {
     ..AddOption("randomSeed", "I", "0")
     ..AddOption("scale", "D", "10.0")
     ..AddOption("gain", "D", "7.0")
-    ..AddOption("change", "D", "0.0")
+    ..AddOption("change", "D", "1.0")
     ..AddOption("pointsize", "D", "2.5")
     ..AddOption("particles", "I", "40000")
     ..AddOption("backgroundColor", "S", "black")
@@ -89,7 +89,7 @@ void OptionsSetup() {
     "scale": "10",
     "gain": "7",
     "particles": "40000",
-    "change": "0.0",
+    "change": "1.0",
   });
 
   gOptions.AddSetting("BlueLarge", {
@@ -99,7 +99,7 @@ void OptionsSetup() {
     "scale": "50",
     "gain": "50",
     "particles": "10000",
-    "change": "0.0",
+    "change": "1.0",
   });
 
   gOptions.AddSetting("BlueLargeChanging", {
@@ -119,7 +119,7 @@ void OptionsSetup() {
     "scale": "150",
     "gain": "150",
     "particles": "10000",
-    "change": "0.0",
+    "change": "1.0",
   });
 
   gOptions.AddSetting("RedMedium", {
@@ -129,7 +129,7 @@ void OptionsSetup() {
     "scale": "20",
     "gain": "20",
     "particles": "10000",
-    "change": "0.0",
+    "change": "1.0",
   });
 
   gOptions.AddSetting("RedMediumDense", {
@@ -139,7 +139,7 @@ void OptionsSetup() {
     "scale": "20",
     "gain": "20",
     "particles": "50000",
-    "change": "0.0",
+    "change": "1.0",
   });
 
   gOptions.AddSetting("AnimatedForeground", {
@@ -149,7 +149,7 @@ void OptionsSetup() {
     "scale": "50",
     "gain": "50",
     "particles": "10000",
-    "change": "0.0",
+    "change": "1.0",
   });
 
   gOptions.AddSetting("AnimatedBackground", {
@@ -159,7 +159,7 @@ void OptionsSetup() {
     "scale": "50",
     "gain": "50",
     "particles": "10000",
-    "change": "0.0",
+    "change": "1.0",
   });
 
   gOptions.AddSetting("BlackLarge", {
@@ -169,7 +169,7 @@ void OptionsSetup() {
     "scale": "50",
     "gain": "50",
     "particles": "10000",
-    "change": "0.0",
+    "change": "1.0",
   });
 
   gOptions.AddSetting("WhiteLarge", {
@@ -179,7 +179,7 @@ void OptionsSetup() {
     "scale": "50",
     "gain": "50",
     "particles": "10000",
-    "change": "0.0",
+    "change": "1.0",
   });
 
   gOptions.ProcessUrlHash();
@@ -276,8 +276,8 @@ final ShaderObject bluredFragmentShader = new ShaderObject("bluredF")
   ..AddUniformVars([uColorAlpha])
   ..SetBodyWithMain(["${oFragColor} = ${uColorAlpha};"]);
 
-RenderPhase Particles(ChronosGL cgl, RenderProgram program, Material mat, Material matBlur,
-    MeshData particles) {
+RenderPhase Particles(ChronosGL cgl, RenderProgram program, Material mat,
+    Material matBlur, MeshData particles) {
   RenderPhase phase = new RenderPhase("particles", cgl);
   phase.clearColorBuffer = false;
 
@@ -302,13 +302,12 @@ VM.Vector3 RandomColor(Math.Random rng) {
   return new VM.Vector3(rng.nextDouble(), rng.nextDouble(), rng.nextDouble());
 }
 
-
-VM.Vector3 TranslateColor(String color, VM.Vector3 random, ColorRotator colorrot) {
+VM.Vector3 TranslateColor(
+    String color, VM.Vector3 random, ColorRotator colorrot) {
   if (color == "random") {
     return random;
   } else if (color == "animated") {
-     return
-           new VM.Vector3(colorrot.r, colorrot.g, colorrot.b);
+    return new VM.Vector3(colorrot.r, colorrot.g, colorrot.b);
   }
   RGB rgb = new RGB.fromName(color);
   return rgb.GlColor();
@@ -321,7 +320,7 @@ void main() {
   IntroduceNewShaderVar(uGain, new ShaderVarDesc("float", ""));
 
   if (!HasWebGLSupport()) {
-    HTML.window.alert("Your browser does not support WebGL.");
+    HTML.window.alert("Your browser does not support WebGL2.");
     return;
   }
   OptionsSetup();
@@ -345,8 +344,8 @@ void main() {
         ..SetUniform(uPointSize, 5.0);
 
   // Every frame 4% of the screen will be blurred
-    Material matBlur = new Material.Transparent("blur", BlendEquationStandard);
-      //..SetUniform(uColorAlpha, new VM.Vector4(bg.r, bg.g, bg.b, 0.04));
+  Material matBlur = new Material.Transparent("blur", BlendEquationStandard);
+  //..SetUniform(uColorAlpha, new VM.Vector4(bg.r, bg.g, bg.b, 0.04));
 
   final borderWidth = 0.02;
   final RenderProgram programParticle =
@@ -387,6 +386,7 @@ void main() {
       mdOut.ChangeVertices(partPos);
       mdIn.ChangeVertices(partPos);
     }
+
     cgl.bindBuffer(GL_ARRAY_BUFFER, null);
     cgl.bindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindingIndex, null);
 
@@ -415,7 +415,10 @@ void main() {
     final String bgColor = gOptions.Get("backgroundColor");
 
     // fight fix points with a jolt of noise occasionally.
-    double noise = ticks % 500 == 0 ? 1.0 + 0.02 : 1.0;
+    double scaleNoise(int ticks) {
+       if (ticks % 600 != 0) return 1.0;
+       return 1.2;
+    }
 
     double t = timeMs * changeRate * 0.001 * 0.001;
     matParticles
@@ -423,21 +426,22 @@ void main() {
       ..ForceUniform(uPointSize, pointsize)
       ..ForceUniform(uGain, gain)
       // add a tiny bit of noise to avoid "orbits
-      ..ForceUniform(uScale, 100.0 / scale * noise)
+      ..ForceUniform(uScale, 100.0 / scale * scaleNoise(ticks))
       ..ForceUniform(uBorder, scale * 0.002)
-      ..ForceUniform(
-            uColor, TranslateColor(fgColor, fgRandomColor, colorrot));
+      ..ForceUniform(uColor, TranslateColor(fgColor, fgRandomColor, colorrot));
 
     bg.rgb = TranslateColor(bgColor, bgRandomColor, colorrot);
     matBlur.ForceUniform(uColorAlpha, bg);
-
-    phaseParticle.Draw();
 
     cgl.bindBuffer(GL_ARRAY_BUFFER, mdIn.GetBuffer(aPosition));
     cgl.bindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, mdOut.GetBuffer(aPosition));
     cgl.copyBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, GL_ARRAY_BUFFER, 0, 0,
         numParticles * 3 * 4);
+    cgl.bindBuffer(GL_ARRAY_BUFFER, null);
+    cgl.bindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, null);
 
+
+    phaseParticle.Draw();
     HTML.window.animationFrame.then(tick);
     UpdateFrameCount(timeMs, gFps, "");
   }
